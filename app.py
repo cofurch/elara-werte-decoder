@@ -7,6 +7,9 @@ import os
 import json
 import io
 import base64
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from pathlib import Path
 from itertools import combinations
 import random
@@ -378,6 +381,56 @@ def check_email_access(email: str) -> bool:
     return False
 
 
+def send_feedback_email(name: str, email: str, top3: list, sterne: int,
+                        a2: str, a3: str, a5: str, erlaubnis: bool):
+    try:
+        smtp_user = st.secrets.get("SMTP_USER", "") if hasattr(st, "secrets") else ""
+        smtp_pass = st.secrets.get("SMTP_PASSWORD", "") if hasattr(st, "secrets") else ""
+        if not smtp_user or not smtp_pass:
+            return False
+
+        sterne_str  = "⭐" * sterne + "☆" * (5 - sterne)
+        erlaubnis_str = "✅ Ja, darf verwendet werden" if erlaubnis else "❌ Nein, nur intern"
+        top3_str    = " · ".join(top3)
+
+        body = f"""
+ELARA Werte Decoder — Neues Feedback
+=====================================
+
+Name:        {name}
+E-Mail:      {email}
+Top 3 Werte: {top3_str}
+Bewertung:   {sterne_str} ({sterne}/5)
+Testimonial: {erlaubnis_str}
+
+─────────────────────────────────────
+Frage 2: Was erkennst du jetzt über dich, das du vorher nicht benennen konntest?
+{a2 or '—'}
+
+─────────────────────────────────────
+Frage 3: Welcher deiner Werte war schon immer da — du hast ihn nur nie so klar gesehen?
+{a3 or '—'}
+
+─────────────────────────────────────
+Frage 5: Welcher der 3 Werte erklärt am besten, warum du tust, was du tust?
+{a5 or '—'}
+"""
+        msg = MIMEMultipart()
+        msg["From"]    = smtp_user
+        msg["To"]      = "info@corinnefurch.com"
+        msg["Subject"] = f"ELARA Feedback – {name} – {sterne_str}"
+        msg.attach(MIMEText(body, "plain", "utf-8"))
+
+        smtp_host = st.secrets.get("SMTP_HOST", "mail.corinnefurch.com") if hasattr(st, "secrets") else "mail.corinnefurch.com"
+        with smtplib.SMTP(smtp_host, 587) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+        return True
+    except Exception:
+        return False
+
+
 def compute_top10(werte_set: set) -> list:
     ordered = [w for w in ALLE_WERTE if w in werte_set]
     return ordered
@@ -585,6 +638,7 @@ DEFAULTS: dict = {
     "p4_scenario_done": False,
     "final_ranking":    [],
     "pdf_bytes":          None,
+    "feedback_sent":      False,
     "direction_analysis": None,
 }
 
@@ -1207,6 +1261,64 @@ def screen_result():
         for k in list(st.session_state.keys()):
             del st.session_state[k]
         go("login")
+
+    # ── Feedback ──────────────────────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown(f"""
+    <div style="background:{SOFT_ROSA};border-radius:12px;padding:1.5rem 1.5rem 0.5rem;">
+    <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;
+                color:{NACHTBLAU};margin-bottom:0.3rem;">Dein Eindruck zählt</div>
+    <div style="color:{DARK};font-size:0.9rem;line-height:1.6;">
+    Zwei Minuten. Drei Fragen. Dein Feedback hilft anderen Frauen zu verstehen, was sie hier erwartet.
+    </div></div>
+    """, unsafe_allow_html=True)
+    st.markdown("")
+
+    if not st.session_state.get("feedback_sent", False):
+        with st.form("feedback_form"):
+            sterne = st.select_slider(
+                "Deine Bewertung",
+                options=[1, 2, 3, 4, 5],
+                value=5,
+                format_func=lambda x: "⭐" * x
+            )
+            a2 = st.text_area(
+                "Was erkennst du jetzt über dich, das du vorher nicht benennen konntest?",
+                height=100, placeholder="Deine Antwort..."
+            )
+            a3 = st.text_area(
+                "Welcher deiner Werte war schon immer da — du hast ihn nur nie so klar gesehen?",
+                height=100, placeholder="Deine Antwort..."
+            )
+            a5 = st.text_area(
+                "Welcher der 3 Werte erklärt am besten, warum du tust, was du tust?",
+                height=100, placeholder="Deine Antwort..."
+            )
+            erlaubnis = st.checkbox(
+                "Ich bin einverstanden, dass mein Feedback als Testimonial verwendet werden darf."
+            )
+            sent = st.form_submit_button("Feedback absenden →", use_container_width=True)
+
+        if sent:
+            if not (a2.strip() or a3.strip() or a5.strip()):
+                st.error("Bitte beantworte mindestens eine Frage.")
+            else:
+                ok = send_feedback_email(
+                    name=name,
+                    email=st.session_state.get("email", ""),
+                    top3=st.session_state.get("final_ranking", [])[:3],
+                    sterne=sterne,
+                    a2=a2.strip(), a3=a3.strip(), a5=a5.strip(),
+                    erlaubnis=erlaubnis
+                )
+                if ok:
+                    st.session_state["feedback_sent"] = True
+                    st.success("Danke für dein Feedback! Es ist angekommen. 💛")
+                    st.rerun()
+                else:
+                    st.warning("Feedback konnte nicht gesendet werden. Kein Problem — dein Profil ist gespeichert.")
+    else:
+        st.success("Feedback bereits abgesendet. Danke! 💛")
 
     footer()
 
