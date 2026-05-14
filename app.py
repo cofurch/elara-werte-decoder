@@ -302,7 +302,7 @@ def get_header_html() -> str:
         return ""
     img_b64 = base64.b64encode(img_path.read_bytes()).decode()
     return f"""<div style="width:100%;border-radius:14px;overflow:hidden;margin-bottom:1.8rem;">
-  <img src="data:image/png;base64,{img_b64}" style="width:100%;display:block;max-height:400px;object-fit:cover;object-position:center top;">
+  <img src="data:image/png;base64,{img_b64}" style="width:100%;display:block;height:auto;">
 </div>"""
 
 
