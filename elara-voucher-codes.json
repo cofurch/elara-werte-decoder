@@ -1,0 +1,14 @@
+{
+  "GRATIS2026": {
+    "active": true,
+    "max_uses": 0,
+    "uses": 0,
+    "note": "Unbegrenzt nutzbar – für Bestandskunden und Tests. max_uses=0 bedeutet unbegrenzt."
+  },
+  "ELARA-TEST": {
+    "active": true,
+    "max_uses": 0,
+    "uses": 0,
+    "note": "Testcode für interne Nutzung."
+  }
+}
