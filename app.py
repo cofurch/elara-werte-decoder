@@ -360,6 +360,24 @@ def check_and_use_voucher(code: str) -> tuple:
     return True, "Code akzeptiert."
 
 
+def check_email_access(email: str) -> bool:
+    """Prüft ob die E-Mail in der autorisierten Liste ist.
+    Liest aus Streamlit Secrets (AUTHORIZED_EMAILS) — kommagetrennte Liste.
+    Später: Google Sheet Anbindung via gspread.
+    """
+    email = email.strip().lower()
+    if not email:
+        return False
+    try:
+        raw = st.secrets.get("AUTHORIZED_EMAILS", "") if hasattr(st, "secrets") else ""
+        if raw:
+            authorized = [e.strip().lower() for e in raw.split(",") if e.strip()]
+            return email in authorized
+    except Exception:
+        pass
+    return False
+
+
 def compute_top10(werte_set: set) -> list:
     ordered = [w for w in ALLE_WERTE if w in werte_set]
     return ordered
@@ -548,6 +566,7 @@ def build_pdf(name: str, top10: list, top5: list, ranking: list) -> bytes:
 DEFAULTS: dict = {
     "screen":           "login",
     "name":             "",
+    "email":            "",
     "p1_group":         0,
     "p1_gruppen":       None,   # shuffled copy of WERTE_GRUPPEN — set on first use
     "p1_saved":         None,   # set() of confirmed selections — initialized on first use
@@ -604,6 +623,10 @@ def screen_login():
             st.session_state["url_access"] = True
 
     with st.form("login_form"):
+        email_input = st.text_input(
+            "Deine E-Mail-Adresse",
+            placeholder="Mit dieser E-Mail hast du gekauft"
+        )
         name = st.text_input("Wie heisst du?", placeholder="Dein Vorname")
         code_input = st.text_input(
             "Gutscheincode (optional)",
@@ -612,20 +635,33 @@ def screen_login():
         submitted = st.form_submit_button("Starten →", use_container_width=True)
 
     if submitted:
-        name = name.strip()
+        name   = name.strip()
+        email  = email_input.strip().lower()
+        code   = code_input.strip()
+
         if not name:
             st.error("Bitte gib deinen Vornamen ein.")
             st.stop()
+        if not email:
+            st.error("Bitte gib deine E-Mail-Adresse ein.")
+            st.stop()
 
-        # Access check
-        has_url_access = st.session_state.get("url_access", False)
-        if not has_url_access and code_input.strip():
-            valid, msg = check_and_use_voucher(code_input)
-            if not valid:
+        # Zugang prüfen: E-Mail ODER Code
+        has_url_access   = st.session_state.get("url_access", False)
+        email_authorized = check_email_access(email)
+        code_valid       = False
+        if code:
+            code_valid, msg = check_and_use_voucher(code)
+
+        if not has_url_access and not email_authorized and not code_valid:
+            if code and not code_valid:
                 st.error(msg)
-                st.stop()
+            else:
+                st.error("Diese E-Mail-Adresse hat keinen Zugang. Bitte prüfe deine Kaufbestätigung oder gib einen Gutscheincode ein.")
+            st.stop()
 
-        st.session_state["name"] = name
+        st.session_state["name"]  = name
+        st.session_state["email"] = email
         go("intro")
 
     st.markdown(
