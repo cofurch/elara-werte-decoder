@@ -301,12 +301,8 @@ def get_header_html() -> str:
     if not img_path.exists():
         return ""
     img_b64 = base64.b64encode(img_path.read_bytes()).decode()
-    return f"""<div style="position:relative;width:100%;border-radius:14px;overflow:hidden;margin-bottom:1.8rem;">
-  <img src="data:image/png;base64,{img_b64}" style="width:100%;display:block;max-height:340px;object-fit:cover;object-position:center top;">
-  <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent 0%,rgba(1,58,91,0.82) 60%,rgba(1,58,91,0.96) 100%);padding:2rem 2rem 1.6rem;">
-    <div style="font-family:'Playfair Display',serif;font-size:2.1rem;font-weight:700;color:white;letter-spacing:0.01em;line-height:1.15;">ELARA Value Decoder</div>
-    <div style="font-family:'DM Sans',sans-serif;font-size:1rem;color:rgba(255,255,255,0.88);font-style:italic;margin-top:0.35rem;">Was bleibt, wenn alles andere wegfällt – deine Werte, dein Kompass.</div>
-  </div>
+    return f"""<div style="width:100%;border-radius:14px;overflow:hidden;margin-bottom:1.8rem;">
+  <img src="data:image/png;base64,{img_b64}" style="width:100%;display:block;max-height:400px;object-fit:cover;object-position:center top;">
 </div>"""
 
 
@@ -340,16 +336,26 @@ def check_and_use_voucher(code: str) -> tuple:
     if not code:
         return False, ""
     vouchers = load_vouchers()
+
+    # Präfix-Codes: z.B. "ELARA-ANNA" matcht den Eintrag "ELARA-*"
+    lookup = code
     if code not in vouchers:
+        parts = code.split("-")
+        if len(parts) >= 2:
+            prefix_key = parts[0] + "-*"
+            if prefix_key in vouchers:
+                lookup = prefix_key
+    if lookup not in vouchers:
         return False, "Dieser Code ist nicht gültig."
-    v = vouchers[code]
+
+    v = vouchers[lookup]
     if not v.get("active", True):
         return False, "Dieser Code ist nicht mehr aktiv."
-    max_uses = v.get("max_uses", 1)
+    max_uses = v.get("max_uses", 0)
     uses = v.get("uses", 0)
     if max_uses > 0 and uses >= max_uses:
         return False, "Dieser Code wurde bereits verwendet."
-    vouchers[code]["uses"] = uses + 1
+    vouchers[lookup]["uses"] = uses + 1
     save_vouchers(vouchers)
     return True, "Code akzeptiert."
 
