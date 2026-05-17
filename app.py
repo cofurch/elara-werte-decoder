@@ -675,7 +675,7 @@ def build_pdf(name: str, top10: list, top5: list, ranking: list) -> bytes:
 # ── SESSION STATE ─────────────────────────────────────────────────────────────
 
 DEFAULTS: dict = {
-    "screen":           "landing",
+    "screen":           "login",
     "name":             "",
     "email":            "",
     "p1_group":         0,
@@ -1565,4 +1565,4 @@ SCREENS = {
     "result":  screen_result,
 }
 
-SCREENS.get(st.session_state["screen"], screen_landing)()
+SCREENS.get(st.session_state["screen"], screen_login)()
