@@ -293,6 +293,64 @@ div.stButton > button:focus {{ box-shadow: 0 0 0 3px {HELLPINK}; }}
     font-size: 0.82rem !important;
     font-weight: 500 !important;
 }}
+
+/* ── LANDING PAGE ── */
+.lp-hero-hl {{
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: {DARK};
+    line-height: 1.35;
+    margin: 1.5rem 0 1rem;
+    text-align: center;
+}}
+.lp-hero-sub {{
+    font-size: 1.05rem;
+    color: {NACHTBLAU};
+    line-height: 1.75;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    opacity: 0.9;
+}}
+.lp-section-hl {{
+    font-family: 'Playfair Display', serif;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: {MAGENTA};
+    margin: 0.5rem 0 0.8rem;
+    line-height: 1.35;
+}}
+.lp-body {{
+    font-size: 0.97rem;
+    color: {DARK};
+    line-height: 1.8;
+    margin-bottom: 0.8rem;
+}}
+.lp-quote {{
+    background: {SOFT_ROSA};
+    border-left: 4px solid {GOLD};
+    border-radius: 0 10px 10px 0;
+    padding: 1rem 1.4rem;
+    margin: 0.8rem 0;
+    font-style: italic;
+    font-size: 1rem;
+    color: {NACHTBLAU};
+    line-height: 1.75;
+}}
+.lp-quote-name {{
+    font-style: normal;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: {MAGENTA};
+}}
+.lp-price {{
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: {NACHTBLAU};
+    text-align: center;
+    margin: 1rem 0 0.5rem;
+}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -617,7 +675,7 @@ def build_pdf(name: str, top10: list, top5: list, ranking: list) -> bytes:
 # ── SESSION STATE ─────────────────────────────────────────────────────────────
 
 DEFAULTS: dict = {
-    "screen":           "login",
+    "screen":           "landing",
     "name":             "",
     "email":            "",
     "p1_group":         0,
@@ -654,6 +712,173 @@ def go(screen: str):
 
 def footer():
     st.markdown(f'<div class="footer-copy">{COPYRIGHT}</div>', unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SCREEN: LANDING PAGE
+# ══════════════════════════════════════════════════════════════════════════════
+
+def screen_landing():
+    header = get_header_html()
+    if header:
+        st.markdown(header, unsafe_allow_html=True)
+    else:
+        st.markdown('<div class="elara-title">ELARA Werte Decoder</div>', unsafe_allow_html=True)
+
+    # ── HERO ──────────────────────────────────────────────────────────────
+    st.markdown(
+        '<div class="lp-hero-hl">Du triffst Entscheidungen.<br>Aber irgendetwas fühlt sich dabei ständig falsch an.</div>',
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        '<div class="lp-hero-sub">Der ELARA Werte-Decoder zeigt dir in 20 Minuten, welche 3 Werte dein Business — und dein Leben — wirklich tragen. Und warum du ohne sie immer wieder Entscheidungen triffst, die sich richtig anhören — aber falsch anfühlen.</div>',
+        unsafe_allow_html=True
+    )
+    st.markdown('<div style="height:0.5rem;"></div>', unsafe_allow_html=True)
+    if st.button("Jetzt starten — CHF 47.–", key="cta_hero"):
+        go("login")
+
+    st.markdown("---")
+
+    # ── SECTION 2: KLAPPEN ────────────────────────────────────────────────
+    st.markdown('<div class="lp-section-hl">Werte kennen reicht nicht — solange sie nicht gelebt werden</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="lp-body">Viele kennen ihre Werte gar nicht und haben auch noch nie davon gehört. Andere kennen sie irgendwie — aber sie leben sie nicht. Nicht weil sie es nicht wollen. Sondern weil ihnen niemand gezeigt hat, wo genau die Lücke ist.<br><br><em>Schau mal, ob eine davon dir bekannt vorkommt.</em></div>',
+        unsafe_allow_html=True
+    )
+
+    with st.expander("Freiheit steht auf deiner Liste — aber wessen Kalender ist das eigentlich?"):
+        st.markdown(
+            f"""<div style="line-height:1.85;color:{DARK};font-size:0.96rem;">
+            Du bist selbständig. Aber dein Tag gehört deinen Kundinnen, deinen Verpflichtungen, den Erwartungen anderer.<br><br>
+            Jede grössere Investition läuft über jemand anderen. Jede Entscheidung braucht ein stilles Ja von irgendwo.<br><br>
+            Freiheit ist dein Wert — aber du lebst ihn auf Bewährung.<br><br>
+            <em>Und genau das zeigt dir der ELARA Werte-Decoder — was Freiheit für DICH wirklich bedeutet. Nicht als Konzept. Als gelebte Realität.</em>
+            </div>""",
+            unsafe_allow_html=True
+        )
+
+    with st.expander("Ehrlichkeit — aber sagst du wirklich, was du denkst?"):
+        st.markdown(
+            f"""<div style="line-height:1.85;color:{DARK};font-size:0.96rem;">
+            Du weisst genau, was dein Angebot wert ist. Und nennst trotzdem einen anderen Preis.<br><br>
+            Du formulierst weich, damit niemand sich verletzt fühlt. Und verletzt dich dabei selbst.<br><br>
+            Online zeigst du eine Version von dir — die fast stimmt. Fast.<br><br>
+            <em>Ehrlichkeit ist für dich von zentraler Bedeutung — aber sagst du wirklich, was du denkst?</em>
+            </div>""",
+            unsafe_allow_html=True
+        )
+
+    with st.expander("Familie ist dein wichtigster Wert — aber du lebst ihn auf Kosten von dir selbst."):
+        st.markdown(
+            f"""<div style="line-height:1.85;color:{DARK};font-size:0.96rem;">
+            Du arbeitest mehr, damit die Familie abgesichert ist. Und hast dadurch weniger von ihr.<br><br>
+            Du trägst alles. Organisierst alles. Funktionierst. Und niemand fragt, wie es dir dabei geht.<br><br>
+            <em>Irgendwann merkst du: Du gibst alles für die Familie — aber die Version von dir, die sie am meisten braucht, ist längst erschöpft.</em>
+            </div>""",
+            unsafe_allow_html=True
+        )
+
+    st.markdown("---")
+
+    # ── SECTION 3: WARUM DAS PASSIERT ─────────────────────────────────────
+    st.markdown('<div class="lp-section-hl">Warum das passiert</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="lp-body">Viele kennen ihre Werte gar nicht. Andere kennen sie irgendwie — leben sie aber nicht. Nicht weil sie es nicht wollen. Sondern weil ihnen niemand gezeigt hat, wo genau die Lücke ist.</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown("---")
+
+    # ── SECTION 4: WAS SICH VERÄNDERT ─────────────────────────────────────
+    st.markdown('<div class="lp-section-hl">Was sich verändert wenn du deine Werte kennst</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="lp-body"><strong>Wenn du deine Werte kennst, hörst du auf zu raten.</strong></div>',
+        unsafe_allow_html=True
+    )
+    for punkt in [
+        "Du weisst, welche Angebote wirklich zu dir passen — und welche dich Energie kosten.",
+        "Du weisst, welche Kundinnen dir gut tun — und welche nicht.",
+        'Du weisst, warum manche Entscheidungen sich falsch anfühlen — obwohl sie "strategisch richtig" wären.',
+        "Dein Business bekommt ein Fundament. Und du weisst, von wo aus du führst.",
+    ]:
+        st.markdown(
+            f'<div style="padding:0.5rem 0 0.5rem 1rem;border-left:3px solid {HELLPINK};margin-bottom:0.5rem;font-size:0.96rem;color:{DARK};">→ {punkt}</div>',
+            unsafe_allow_html=True
+        )
+
+    st.markdown("---")
+
+    # ── SECTION 5: WAS DU DANACH KONKRET TUST ─────────────────────────────
+    st.markdown('<div class="lp-section-hl">Was du danach konkret tust</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="lp-body">Werte kennen ist Schritt 1. Werte leben verändert alles — und genau dafür ist dieser Decoder gebaut.</div>',
+        unsafe_allow_html=True
+    )
+    for nr, titel, text in [
+        ("1.", "Du prüfst deine Angebote.", "Welches davon trägst du gerne — und welches hast du aus Pflicht oder Angst gebaut? Was darf weg. Was darf teurer werden."),
+        ("2.", "Du filterst deine Kundinnen.", "Welche geben dir Energie — und welche kosten sie? Deine Werte sind dein Massstab. Nicht die Zahlungsbereitschaft."),
+        ("3.", "Du überarbeitest deine Texte.", "Ein Satz pro Wert. Als Filter für deine Website, deine Captions, dein Angebot. Klingt es nach dir — oder nach allen anderen?"),
+    ]:
+        st.markdown(
+            f'<div style="background:white;border:1px solid {HELLPINK};border-radius:10px;padding:0.9rem 1.2rem;margin-bottom:0.6rem;font-size:0.95rem;color:{DARK};line-height:1.65;">'
+            f'<span style="font-family:Playfair Display,serif;font-size:1.15rem;font-weight:700;color:{MAGENTA};margin-right:0.5rem;">{nr}</span>'
+            f'<strong>{titel}</strong><br>{text}</div>',
+            unsafe_allow_html=True
+        )
+
+    st.markdown("---")
+
+    # ── SECTION 6: SOCIAL PROOF ────────────────────────────────────────────
+    st.markdown('<div class="lp-section-hl">Das sagen andere</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="lp-quote">"Seitdem ich meine Werte kenne, frage ich mich bei jeder Entscheidung: Zahlt das auf meine Werte ein — oder dagegen?"<br><br>'
+        f'<span class="lp-quote-name">— Julia, Marketing Expertin</span></div>',
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        f'<div class="lp-quote">"In wenigen Minuten hatte ich meine Werte. So klar hatte ich das noch nie gesehen."<br><br>'
+        f'<span class="lp-quote-name">— Lina, Tierkinesologin</span></div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown("---")
+
+    # ── SECTION 7: SO FUNKTIONIERT ES ─────────────────────────────────────
+    st.markdown('<div class="lp-section-hl">So funktioniert es</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="lp-body"><em>Kein Seminar. Kein stundenlanger Selbstfindungstrip. 20 Minuten — und du weisst es.</em></div>',
+        unsafe_allow_html=True
+    )
+    for nr, schritt in [
+        ("1", "Du wählst aus 150 Werten, was dich bewegt"),
+        ("2", "Du bringst sie in eine Reihenfolge"),
+        ("3", "Du vergleichst direkt — bis die 3 klarsten übrig bleiben"),
+        ("4", "Du erhältst dein persönliches Werte-Profil als PDF"),
+    ]:
+        st.markdown(
+            f'<div style="display:flex;align-items:center;gap:0.8rem;padding:0.7rem 1rem;border-left:3px solid {MAGENTA};margin-bottom:0.5rem;background:{SOFT_ROSA};border-radius:0 8px 8px 0;">'
+            f'<span style="font-family:Playfair Display,serif;font-size:1.2rem;font-weight:700;color:{MAGENTA};min-width:1.5rem;">{nr}</span>'
+            f'<span style="font-size:0.95rem;color:{DARK};">{schritt}</span></div>',
+            unsafe_allow_html=True
+        )
+
+    st.markdown("---")
+
+    # ── SECTION 8: PREIS + CTA ─────────────────────────────────────────────
+    st.markdown(
+        '<div class="lp-price">CHF 47.– Einführungspreis bis 30. Mai — danach CHF 149.–</div>',
+        unsafe_allow_html=True
+    )
+    st.markdown('<div style="height:0.8rem;"></div>', unsafe_allow_html=True)
+    if st.button("Ich will meine Top 3 Werte kennen →", key="cta_bottom"):
+        go("login")
+    st.markdown(
+        '<div style="text-align:center;color:#aaa;font-size:0.82rem;margin-top:0.7rem;">Kein Abo. Kein Login danach. Dein Profil gehört dir.</div>',
+        unsafe_allow_html=True
+    )
+
+    footer()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1328,6 +1553,7 @@ def screen_result():
 # ══════════════════════════════════════════════════════════════════════════════
 
 SCREENS = {
+    "landing": screen_landing,
     "login":   screen_login,
     "intro":   screen_intro,
     "phase1":  screen_phase1,
@@ -1339,4 +1565,4 @@ SCREENS = {
     "result":  screen_result,
 }
 
-SCREENS.get(st.session_state["screen"], screen_login)()
+SCREENS.get(st.session_state["screen"], screen_landing)()
